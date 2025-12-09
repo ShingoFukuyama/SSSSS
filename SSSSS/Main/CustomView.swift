@@ -20,7 +20,7 @@ struct CustomView: View {
 
             Text("Count: \(store.count)")
             buttonView(title: "Increment!") {
-                store.action(.incrementCount)
+                store.send(.incrementCount)
             }
 
             Divider()
@@ -37,7 +37,7 @@ struct CustomView: View {
             .frame(maxHeight: 300)
             .border(Color.black, width: 2)
             buttonView(title: "Fetch Post!") {
-                store.action(.fetchPosts)
+                store.send(.fetchPosts)
             }
 
             Divider()
