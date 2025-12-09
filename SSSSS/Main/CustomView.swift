@@ -5,7 +5,6 @@
 //  Created by Shingo Fukuyama on 2025/12/09.
 //
 
-import Combine
 import SwiftUI
 
 struct CustomView: View {
@@ -17,55 +16,57 @@ struct CustomView: View {
 
     var body: some View {
         VStack {
+            Divider()
+
             Text("Count: \(store.count)")
-            Button {
+            buttonView(title: "Increment!") {
                 store.action(.incrementCount)
-            } label: {
-                Text("Increment")
+            }
+
+            Divider()
+
+            ScrollView {
+                VStack(spacing: 8) {
+                    ForEach(store.posts) { post in
+                        postView(id: post.id, title: post.title)
+                            .frame(maxWidth: 350, alignment: .leading)
+                            .padding(8)
+                    }
+                }
+            }
+            .frame(maxHeight: 300)
+            .border(Color.black, width: 2)
+            buttonView(title: "Fetch Post!") {
+                store.action(.fetchPosts)
+            }
+
+            Divider()
+
+            if let errorMessage = store.errorMessage {
+                Text("Error: \(errorMessage)")
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.pink)
-    }
-}
-
-final class CustomViewStore: CustomObservable {
-    @Published private(set) var count = 0
-
-    enum Action {
-        case incrementCount
     }
 
-    enum Mutation {
-        case setCount(Int)
-    }
-
-    func mutate(action: Action) -> Mutation {
-        switch action {
-        case .incrementCount:
-            return .setCount(count + 1)
+    private func postView(id: Int, title: String) -> some View {
+        HStack(alignment: .top) {
+            Text("\(id):")
+            Text("\(title)")
         }
     }
 
-    func reduce(mutation: Mutation) {
-        switch mutation {
-        case let .setCount(count):
-            self.count = count
+    private func buttonView(title: String, action: @escaping () -> Void) -> some View {
+        Button {
+            action()
+        } label: {
+            Text(title)
+                .foregroundStyle(Color.white)
+                .padding(8)
         }
-    }
-}
-
-protocol CustomObservable {
-    associatedtype Action
-    associatedtype Mutation
-    func action(_ action: Action)
-    func mutate(action: Action) -> Mutation
-    func reduce(mutation: Mutation)
-}
-
-extension CustomObservable {
-    func action(_ action: Action) {
-        let mutation = mutate(action: action)
-        reduce(mutation: mutation)
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .foregroundStyle(Color.green)
+        )
     }
 }
