@@ -22,16 +22,31 @@ final class CustomViewState: CustomObservable {
         var errorMessage: String?
     }
 
-    func mutate(action: Action) async -> Observable<Mutation> {
-        switch action {
-        case .incrementCount:
-            return .just(.setCount(state.count + 1))
-        case .fetchPosts:
-            return .concat([
-                .just(.setIsLoading(true)),
-                .async(fetchPosts()),
-                .just(.setIsLoading(false))
-            ])
+    func mutate(action: Action, state: State) -> AsyncStream<Mutation> {
+        AsyncStream { continuation in
+            // 副作用とロジックはバックグランドスレッドで行う
+            let task = Task.detached { [weak self] in
+                defer {
+                    continuation.finish()
+                }
+
+                guard let self else { return }
+                
+                switch action {
+                case .incrementCount:
+                    continuation.yield(.setCount(state.count + 1))
+                    
+                case .fetchPosts:
+                    continuation.yield(.setIsLoading(true))
+                    let resultAction = await self.fetchPosts()
+                    continuation.yield(resultAction)
+                    continuation.yield(.setIsLoading(false))
+                }
+            }
+
+            continuation.onTermination = { _ in
+                task.cancel()
+            }
         }
     }
 
@@ -48,16 +63,17 @@ final class CustomViewState: CustomObservable {
         }
     }
 
-    private func fetchPosts() -> () async -> Mutation {
-        {
-            try? await Task.sleep(for: .seconds(1))
-            let result = await JsonPlaceholder.fetchPosts()
-            switch result {
-            case let .success(posts):
-                return .setPosts(posts)
-            case let .failure(error):
-                return .setErrorMessage(error.errorDescription)
-            }
+    // MainActorのコンテキストから切り離し、不要なメインスレッド占有とStateへの書き込みを防ぐ
+    private nonisolated func fetchPosts() async -> Mutation {
+        try? await Task.sleep(for: .seconds(1))
+
+        let result = await JsonPlaceholder.fetchPosts()
+        
+        switch result {
+        case let .success(posts):
+            return .setPosts(posts)
+        case let .failure(error):
+            return .setErrorMessage(error.errorDescription)
         }
     }
 }
