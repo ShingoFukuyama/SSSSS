@@ -1,5 +1,5 @@
 //
-//  CustomViewStore.swift
+//  CustomViewState.swift
 //  SSSSS
 //
 //  Created by Shingo Fukuyama on 2025/12/09.
@@ -7,7 +7,7 @@
 
 import Combine
 
-final class CustomViewStore: CustomObservable {
+final class CustomViewState: CustomObservable {
     @Published private(set) var count = 0
     @Published private(set) var posts: [JsonPlaceholder.Post] = []
     @Published private(set) var errorMessage: String?

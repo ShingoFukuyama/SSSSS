@@ -9,7 +9,7 @@ import SwiftUI
 import UIKit
 
 class ViewController: UIViewController {
-    private let viewStore = CustomViewStore()
+    private let viewStore = CustomViewState()
 
     override func viewDidLoad() {
         super.viewDidLoad()

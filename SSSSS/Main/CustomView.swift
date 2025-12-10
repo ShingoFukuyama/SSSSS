@@ -8,9 +8,9 @@
 import SwiftUI
 
 struct CustomView: View {
-    @ObservedObject var store: CustomViewStore
+    @ObservedObject var store: CustomViewState
 
-    init(store: CustomViewStore) {
+    init(store: CustomViewState) {
         self.store = store
     }
 
