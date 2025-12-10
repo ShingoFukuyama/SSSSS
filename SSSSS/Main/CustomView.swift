@@ -18,7 +18,7 @@ struct CustomView: View {
         VStack {
             Divider()
 
-            Text("Count: \(store.count)")
+            Text("Count: \(store.state.count)")
             buttonView(title: "Increment!") {
                 store.send(.incrementCount)
             }
@@ -27,7 +27,7 @@ struct CustomView: View {
 
             ScrollView {
                 VStack(spacing: 8) {
-                    ForEach(store.posts) { post in
+                    ForEach(store.state.posts) { post in
                         postView(id: post.id, title: post.title)
                             .frame(maxWidth: 350, alignment: .leading)
                             .padding(8)
@@ -42,7 +42,7 @@ struct CustomView: View {
 
             Divider()
 
-            if let errorMessage = store.errorMessage {
+            if let errorMessage = store.state.errorMessage {
                 Text("Error: \(errorMessage)")
             }
         }

@@ -8,9 +8,7 @@
 import Combine
 
 final class CustomViewState: CustomObservable {
-    @Published private(set) var count = 0
-    @Published private(set) var posts: [JsonPlaceholder.Post] = []
-    @Published private(set) var errorMessage: String?
+    @Published var state: State = .init()
 
     enum Action {
         case incrementCount
@@ -23,23 +21,29 @@ final class CustomViewState: CustomObservable {
         case setErrorMessage(String?)
     }
 
+    struct State {
+        var count = 0
+        var posts: [JsonPlaceholder.Post] = []
+        var errorMessage: String?
+    }
+
     func mutate(action: Action) async -> [Mutation] {
         switch action {
         case .incrementCount:
-            return [.setCount(count + 1)]
+            [.setCount(state.count + 1)]
         case .fetchPosts:
-            return await fetchPosts()
+            await fetchPosts()
         }
     }
 
-    func reduce(mutation: Mutation) {
+    func reduce(state: inout State, mutation: Mutation) {
         switch mutation {
         case let .setCount(count):
-            self.count = count
+            state.count = count
         case let .setPosts(posts):
-            self.posts = posts
+            state.posts = posts
         case let .setErrorMessage(errorMessage):
-            self.errorMessage = errorMessage
+            state.errorMessage = errorMessage
         }
     }
 
