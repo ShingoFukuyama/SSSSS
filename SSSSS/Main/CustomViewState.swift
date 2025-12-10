@@ -15,24 +15,30 @@ final class CustomViewState: CustomObservable {
         case fetchPosts
     }
 
-    enum Mutation {
+    enum Mutation: Sendable {
         case setCount(Int)
+        case setIsLoading(Bool)
         case setPosts([JsonPlaceholder.Post])
         case setErrorMessage(String?)
     }
 
     struct State {
         var count = 0
+        var isLoading = false
         var posts: [JsonPlaceholder.Post] = []
         var errorMessage: String?
     }
 
-    func mutate(action: Action) async -> [Mutation] {
+    func mutate(action: Action) async -> Observable<Mutation> {
         switch action {
         case .incrementCount:
-            [.setCount(state.count + 1)]
+            return .just(.setCount(state.count + 1))
         case .fetchPosts:
-            await fetchPosts()
+            return .concat([
+                .just(.setIsLoading(true)),
+                .async(fetchPosts()),
+                .just(.setIsLoading(false))
+            ])
         }
     }
 
@@ -40,6 +46,8 @@ final class CustomViewState: CustomObservable {
         switch mutation {
         case let .setCount(count):
             state.count = count
+        case let .setIsLoading(isLoading):
+            state.isLoading = isLoading
         case let .setPosts(posts):
             state.posts = posts
         case let .setErrorMessage(errorMessage):
@@ -47,13 +55,16 @@ final class CustomViewState: CustomObservable {
         }
     }
 
-    private func fetchPosts() async -> [Mutation] {
-        let result = await JsonPlaceholder.fetchPosts()
-        switch result {
-        case let .success(posts):
-            return [.setPosts(posts)]
-        case let .failure(error):
-            return [.setErrorMessage(error.errorDescription)]
+    private func fetchPosts() -> () async -> Mutation {
+        {
+            try? await Task.sleep(for: .seconds(1))
+            let result = await JsonPlaceholder.fetchPosts()
+            switch result {
+            case let .success(posts):
+                return .setPosts(posts)
+            case let .failure(error):
+                return .setErrorMessage(error.errorDescription)
+            }
         }
     }
 }

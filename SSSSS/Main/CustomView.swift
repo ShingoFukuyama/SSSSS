@@ -15,35 +15,48 @@ struct CustomView: View {
     }
 
     var body: some View {
-        VStack {
-            Divider()
+        ZStack {
+            VStack {
+                Divider()
 
-            Text("Count: \(store.state.count)")
-            buttonView(title: "Increment!") {
-                store.send(.incrementCount)
-            }
+                Text("Count: \(store.state.count)")
+                buttonView(title: "Increment!") {
+                    store.send(.incrementCount)
+                }
 
-            Divider()
+                Divider()
 
-            ScrollView {
-                VStack(spacing: 8) {
-                    ForEach(store.state.posts) { post in
-                        postView(id: post.id, title: post.title)
-                            .frame(maxWidth: 350, alignment: .leading)
-                            .padding(8)
+                ScrollView {
+                    VStack(spacing: 8) {
+                        ForEach(store.state.posts) { post in
+                            postView(id: post.id, title: post.title)
+                                .frame(maxWidth: 350, alignment: .leading)
+                                .padding(8)
+                        }
                     }
                 }
-            }
-            .frame(maxHeight: 300)
-            .border(Color.black, width: 2)
-            buttonView(title: "Fetch Post!") {
-                store.send(.fetchPosts)
-            }
+                .frame(maxHeight: 300)
+                .border(Color.black, width: 2)
+                buttonView(title: "Fetch Post!") {
+                    store.send(.fetchPosts)
+                }
 
-            Divider()
+                Divider()
 
-            if let errorMessage = store.state.errorMessage {
-                Text("Error: \(errorMessage)")
+                if let errorMessage = store.state.errorMessage {
+                    Text("Error: \(errorMessage)")
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            if store.state.isLoading {
+                ZStack(alignment: .center) {
+                    ProgressView()
+                        .controlSize(.large)
+                        .foregroundStyle(Color.white)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.black.opacity(0.5))
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
