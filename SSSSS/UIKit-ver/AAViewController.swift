@@ -1,11 +1,3 @@
-//
-//  AAViewController.swift
-//  SSSSS
-//
-//  Created by Shingo Fukuyama on 2025/12/10.
-//
-
-import SwiftUI
 import UIKit
 import Combine
 
