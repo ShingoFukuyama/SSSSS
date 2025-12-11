@@ -38,6 +38,8 @@ extension CustomObservable {
             // update self.state before async
             self.state = state
             let mutation = await task()
+            // update state for reduce
+            state = self.state
             reduce(state: &state, mutation: mutation)
 
         case let .concat(observables1):
